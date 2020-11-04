@@ -1,6 +1,4 @@
 ﻿using Acme.BookStore.Books;
-using Acme.BookStore.Dtos;
-using Acme.BookStore.Interface;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +6,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
-namespace Acme.BookStore.Service
+namespace Acme.BookStore.Books
 {
     public class BookAppService :
         CrudAppService<
