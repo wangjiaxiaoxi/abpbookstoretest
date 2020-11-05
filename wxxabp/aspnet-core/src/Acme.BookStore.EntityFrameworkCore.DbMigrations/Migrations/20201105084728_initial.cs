@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Acme.BookStore.Migrations
 {
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -93,21 +93,6 @@ namespace Acme.BookStore.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AbpFeatureValues", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AbpLinkUsers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    SourceUserId = table.Column<Guid>(nullable: false),
-                    SourceTenantId = table.Column<Guid>(nullable: true),
-                    TargetUserId = table.Column<Guid>(nullable: false),
-                    TargetTenantId = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpLinkUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -273,7 +258,7 @@ namespace Acme.BookStore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BsBooks",
+                name: "BsAuthors",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -283,14 +268,16 @@ namespace Acme.BookStore.Migrations
                     CreatorId = table.Column<Guid>(nullable: true),
                     LastModificationTime = table.Column<DateTime>(nullable: true),
                     LastModifierId = table.Column<Guid>(nullable: true),
-                    Name = table.Column<string>(maxLength: 128, nullable: false),
-                    Type = table.Column<int>(nullable: false),
-                    PublishDate = table.Column<DateTime>(nullable: false),
-                    Price = table.Column<float>(nullable: false)
+                    IsDeleted = table.Column<bool>(nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(nullable: true),
+                    DeletionTime = table.Column<DateTime>(nullable: true),
+                    Name = table.Column<string>(maxLength: 64, nullable: false),
+                    BirthDate = table.Column<DateTime>(nullable: false),
+                    ShortBio = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BsBooks", x => x.Id);
+                    table.PrimaryKey("PK_BsAuthors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -677,6 +664,34 @@ namespace Acme.BookStore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BsBooks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    ExtraProperties = table.Column<string>(nullable: true),
+                    ConcurrencyStamp = table.Column<string>(maxLength: 40, nullable: true),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    CreatorId = table.Column<Guid>(nullable: true),
+                    LastModificationTime = table.Column<DateTime>(nullable: true),
+                    LastModifierId = table.Column<Guid>(nullable: true),
+                    AuthorId = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(maxLength: 128, nullable: false),
+                    Type = table.Column<int>(nullable: false),
+                    PublishDate = table.Column<DateTime>(nullable: false),
+                    Price = table.Column<float>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BsBooks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BsBooks_BsAuthors_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "BsAuthors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IdentityServerApiClaims",
                 columns: table => new
                 {
@@ -1011,12 +1026,6 @@ namespace Acme.BookStore.Migrations
                 columns: new[] { "Name", "ProviderName", "ProviderKey" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AbpLinkUsers_SourceUserId_SourceTenantId_TargetUserId_Target~",
-                table: "AbpLinkUsers",
-                columns: new[] { "SourceUserId", "SourceTenantId", "TargetUserId", "TargetTenantId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AbpOrganizationUnitRoles_RoleId_OrganizationUnitId",
                 table: "AbpOrganizationUnitRoles",
                 columns: new[] { "RoleId", "OrganizationUnitId" });
@@ -1117,6 +1126,16 @@ namespace Acme.BookStore.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BsAuthors_Name",
+                table: "BsAuthors",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BsBooks_AuthorId",
+                table: "BsBooks",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_IdentityServerClients_ClientId",
                 table: "IdentityServerClients",
                 column: "ClientId");
@@ -1165,9 +1184,6 @@ namespace Acme.BookStore.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpFeatureValues");
-
-            migrationBuilder.DropTable(
-                name: "AbpLinkUsers");
 
             migrationBuilder.DropTable(
                 name: "AbpOrganizationUnitRoles");
@@ -1264,6 +1280,9 @@ namespace Acme.BookStore.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpUsers");
+
+            migrationBuilder.DropTable(
+                name: "BsAuthors");
 
             migrationBuilder.DropTable(
                 name: "IdentityServerApiScopes");
