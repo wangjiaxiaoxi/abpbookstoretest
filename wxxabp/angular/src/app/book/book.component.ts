@@ -4,9 +4,6 @@ import { BookService, BookDto, bookTypeOptions } from '@proxy/books';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NgbDateNativeAdapter, NgbDateAdapter } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
 @Component({
   selector: 'app-book',
   templateUrl: './book.component.html',
@@ -16,20 +13,23 @@ import { map } from 'rxjs/operators';
 export class BookComponent implements OnInit {
   book = { items: [], totalCount: 0 } as PagedResultDto<BookDto>;
 
-  form: FormGroup;
-
   selectedBook = {} as BookDto;
 
-  bookTypes = bookTypeOptions;
+  form: FormGroup;
 
+  bookType = bookTypeOptions;
+  bookTypes = this.bookType;
+  bookTypes1 = Object.keys(this.bookType).filter(
+    (key) => typeof this.bookType[key] === 'number'
+  );
   isModalOpen = false;
 
   constructor(
     public readonly list: ListService,
     private bookService: BookService,
     private fb: FormBuilder,
-    private confirmation: ConfirmationService
-  ) { }
+    private confirmation: ConfirmationService // inject the ConfirmationService
+  ) {}
 
   ngOnInit() {
     const bookStreamCreator = (query) => this.bookService.getList(query);
@@ -38,13 +38,13 @@ export class BookComponent implements OnInit {
       this.book = response;
     });
   }
-
   createBook() {
     this.selectedBook = {} as BookDto;
     this.buildForm();
     this.isModalOpen = true;
   }
 
+  // Add editBook method
   editBook(id: string) {
     this.bookService.get(id).subscribe((book) => {
       this.selectedBook = book;
@@ -55,7 +55,7 @@ export class BookComponent implements OnInit {
 
   buildForm() {
     this.form = this.fb.group({
-      name: [this.selectedBook.name || null, Validators.required],
+      name: [this.selectedBook.name || '', Validators.required],
       type: [this.selectedBook.type || null, Validators.required],
       publishDate: [
         this.selectedBook.publishDate ? new Date(this.selectedBook.publishDate) : null,
@@ -64,6 +64,7 @@ export class BookComponent implements OnInit {
       price: [this.selectedBook.price || null, Validators.required],
     });
   }
+
 
   save() {
     if (this.form.invalid) {
@@ -81,8 +82,9 @@ export class BookComponent implements OnInit {
     });
   }
 
+  // Add a delete method
   delete(id: string) {
-    this.confirmation.warn('::AreYouSureToDelete', 'AbpAccount::AreYouSure').subscribe((status) => {
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
       if (status === Confirmation.Status.confirm) {
         this.bookService.delete(id).subscribe(() => this.list.get());
       }
